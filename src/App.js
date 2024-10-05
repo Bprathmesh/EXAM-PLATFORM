@@ -1,7 +1,7 @@
-import React from 'react';
-import { FullScreen, useFullScreenHandle } from 'react-full-screen';
-import ExamPlatform from './ExamPlatform';
-import './App.css';
+import React from "react";
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
+import ExamPlatform from "./components/ExamPlatform";
+import "./App.css";
 
 function App() {
   const handle = useFullScreenHandle();

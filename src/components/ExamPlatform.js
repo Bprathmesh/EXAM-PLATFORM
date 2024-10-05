@@ -1,28 +1,28 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { FullScreen, useFullScreenHandle } from 'react-full-screen';
-import Timer from './Timer';
-import Question from './Question';
-import './ExamPlatform.css';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
+import Timer from "./Timer";
+import Question from "./Question";
+import "./ExamPlatform.css";
 
 const sampleQuestions = [
   {
     id: 1,
     text: "What is the capital of France?",
     options: ["Paris", "Berlin", "London", "Madrid"],
-    weight: 1
+    weight: 1,
   },
   {
     id: 2,
     text: "Which planet is known as the Red Planet?",
     options: ["Venus", "Jupiter", "Mars", "Saturn"],
-    weight: 2
+    weight: 2,
   },
   {
     id: 3,
     text: "What is 12 + 2?",
     options: ["3", "4", "14", "6"],
-    weight: 1
-  }
+    weight: 1,
+  },
 ];
 
 const ExamPlatform = () => {
@@ -30,25 +30,32 @@ const ExamPlatform = () => {
   const [examFinished, setExamFinished] = useState(false);
   const [violationCount, setViolationCount] = useState(0);
   const [windowSwitchCount, setWindowSwitchCount] = useState(0);
-  const [examStatus, setExamStatus] = useState('');
+  const [examStatus, setExamStatus] = useState("");
   const [answers, setAnswers] = useState({});
   const [examDuration, setExamDuration] = useState(3600); // Default 1 hour
   const timerRef = useRef(null);
   const fullScreenHandle = useFullScreenHandle();
 
-  const terminateExam = useCallback((reason) => {
-    setExamFinished(true);
-    setExamStatus(reason);
-    fullScreenHandle.exit();
-  }, [fullScreenHandle]);
+  const terminateExam = useCallback(
+    (reason) => {
+      setExamFinished(true);
+      setExamStatus(reason);
+      fullScreenHandle.exit();
+    },
+    [fullScreenHandle]
+  );
 
   const handleViolation = useCallback(() => {
     setViolationCount((prevCount) => {
       const newCount = prevCount + 1;
       if (newCount === 1) {
-        alert('Violation Warning: Please do not exit full-screen mode. This is your first warning.');
+        alert(
+          "Violation Warning: Please do not exit full-screen mode. This is your first warning."
+        );
       } else {
-        terminateExam('Exam terminated due to multiple full-screen violations.');
+        terminateExam(
+          "Exam terminated due to multiple full-screen violations."
+        );
       }
       return newCount;
     });
@@ -58,9 +65,13 @@ const ExamPlatform = () => {
     setWindowSwitchCount((prevCount) => {
       const newCount = prevCount + 1;
       if (newCount > 2) {
-        terminateExam('Exam terminated due to excessive window switching.');
+        terminateExam("Exam terminated due to excessive window switching.");
       } else {
-        alert(`Warning: Window switching detected. You have ${3 - newCount} switches remaining.`);
+        alert(
+          `Warning: Window switching detected. You have ${
+            3 - newCount
+          } switches remaining.`
+        );
       }
       return newCount;
     });
@@ -73,10 +84,10 @@ const ExamPlatform = () => {
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [examStarted, examFinished, handleWindowSwitch]);
 
@@ -87,21 +98,27 @@ const ExamPlatform = () => {
       }
     };
 
-    window.addEventListener('keydown', handleKeyboardActivity);
+    window.addEventListener("keydown", handleKeyboardActivity);
     return () => {
-      window.removeEventListener('keydown', handleKeyboardActivity);
+      window.removeEventListener("keydown", handleKeyboardActivity);
     };
   }, [examStarted, examFinished]);
 
   const startExam = () => {
-    if (window.confirm(`Are you ready to start the exam? The exam will begin in full-screen mode and last for ${examDuration / 60} minutes. Note: Switching windows more than twice will terminate the exam.`)) {
+    if (
+      window.confirm(
+        `Are you ready to start the exam? The exam will begin in full-screen mode and last for ${
+          examDuration / 60
+        } minutes. Note: Switching windows more than twice will terminate the exam.`
+      )
+    ) {
       setExamStarted(true);
       fullScreenHandle.enter();
     }
   };
 
   const submitExam = () => {
-    terminateExam('Exam completed successfully.');
+    terminateExam("Exam completed successfully.");
   };
 
   const resetExam = () => {
@@ -109,7 +126,7 @@ const ExamPlatform = () => {
     setExamFinished(false);
     setViolationCount(0);
     setWindowSwitchCount(0);
-    setExamStatus('');
+    setExamStatus("");
     setAnswers({});
     if (timerRef.current) {
       timerRef.current.resetTimer();
@@ -117,25 +134,26 @@ const ExamPlatform = () => {
   };
 
   const handleAnswer = (questionId, answer) => {
-    setAnswers(prevAnswers => ({
+    setAnswers((prevAnswers) => ({
       ...prevAnswers,
-      [questionId]: answer
+      [questionId]: answer,
     }));
   };
 
   const calculateScore = () => {
     let totalScore = 0;
     let totalWeight = 0;
-  
-    sampleQuestions.forEach(question => {
-      if (answers[question.id] === question.options[2]) { // Assuming the third option is always correct
+
+    sampleQuestions.forEach((question) => {
+      if (answers[question.id] === question.options[2]) {
+        // Assuming the third option is always correct
         totalScore += question.weight;
       }
       totalWeight += question.weight;
     });
-  
+
     const scorePercentage = (totalScore / totalWeight) * 100;
-    return scorePercentage.toFixed(2); 
+    return scorePercentage.toFixed(2);
   };
 
   const handleDurationChange = (e) => {
@@ -146,23 +164,25 @@ const ExamPlatform = () => {
     <div className="exam-platform">
       <div className="exam-header">
         <h1>Exam in Progress</h1>
-        <Timer 
-          duration={examDuration} 
-          onTimeUp={() => terminateExam('Exam time expired.')} 
+        <Timer
+          duration={examDuration}
+          onTimeUp={() => terminateExam("Exam time expired.")}
           ref={timerRef}
         />
       </div>
       <div className="exam-content">
-        {sampleQuestions.map(question => (
-          <Question 
-            key={question.id} 
-            question={question} 
+        {sampleQuestions.map((question) => (
+          <Question
+            key={question.id}
+            question={question}
             onAnswer={handleAnswer}
           />
         ))}
       </div>
       <div className="exam-footer">
-        <button onClick={submitExam} className="submit-button">Submit Exam</button>
+        <button onClick={submitExam} className="submit-button">
+          Submit Exam
+        </button>
       </div>
     </div>
   );
@@ -174,16 +194,18 @@ const ExamPlatform = () => {
         <p>This exam contains {sampleQuestions.length} questions.</p>
         <div className="exam-setup">
           <label htmlFor="duration">Exam Duration (minutes):</label>
-          <input 
-            type="number" 
-            id="duration" 
-            value={examDuration / 60} 
+          <input
+            type="number"
+            id="duration"
+            value={examDuration / 60}
             onChange={handleDurationChange}
             min="1"
             max="180"
           />
         </div>
-        <button onClick={startExam} className="start-button">Start Exam</button>
+        <button onClick={startExam} className="start-button">
+          Start Exam
+        </button>
       </div>
     );
   }
@@ -201,24 +223,37 @@ const ExamPlatform = () => {
         </div>
         <div className="answer-review">
           <h3>Your Answers:</h3>
-          {sampleQuestions.map(question => (
+          {sampleQuestions.map((question) => (
             <div key={question.id} className="question-review">
-              <p>Question {question.id} (Weight: {question.weight}): {answers[question.id] || "Not answered"} - {answers[question.id] === question.options[2] ? "Correct" : "Incorrect"}</p>
+              <p>
+                Question {question.id} (Weight: {question.weight}):{" "}
+                {answers[question.id] || "Not answered"} -{" "}
+                {answers[question.id] === question.options[2]
+                  ? "Correct"
+                  : "Incorrect"}
+              </p>
             </div>
           ))}
         </div>
-        <button onClick={resetExam} className="reset-button">Restart Exam</button>
+        <button onClick={resetExam} className="reset-button">
+          Restart Exam
+        </button>
       </div>
     );
   }
 
   return (
-    <FullScreen handle={fullScreenHandle} onChange={(state) => {
-      if (!state && fullScreenHandle.active && examStarted && !examFinished) {
-        handleViolation();
-      }
-    }}>
-      {fullScreenHandle.active ? renderExamContent() : (
+    <FullScreen
+      handle={fullScreenHandle}
+      onChange={(state) => {
+        if (!state && fullScreenHandle.active && examStarted && !examFinished) {
+          handleViolation();
+        }
+      }}
+    >
+      {fullScreenHandle.active ? (
+        renderExamContent()
+      ) : (
         <div className="exam-platform">
           <h1>Warning: Not in Full-Screen Mode</h1>
           <p>Please return to full-screen mode to continue the exam.</p>
