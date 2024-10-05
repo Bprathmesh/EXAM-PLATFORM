@@ -8,19 +8,19 @@ const sampleQuestions = [
   {
     id: 1,
     text: "What is the capital of France?",
-    options: ["London", "Berlin", "Paris", "Madrid"],
+    options: ["Paris", "Berlin", "London", "Madrid"],
     weight: 1
   },
   {
     id: 2,
     text: "Which planet is known as the Red Planet?",
-    options: ["Mars", "Jupiter", "Venus", "Saturn"],
+    options: ["Venus", "Jupiter", "Mars", "Saturn"],
     weight: 2
   },
   {
     id: 3,
-    text: "What is 2 + 2?",
-    options: ["3", "4", "5", "6"],
+    text: "What is 12 + 2?",
+    options: ["3", "4", "14", "6"],
     weight: 1
   }
 ];
@@ -80,6 +80,19 @@ const ExamPlatform = () => {
     };
   }, [examStarted, examFinished, handleWindowSwitch]);
 
+  useEffect(() => {
+    const handleKeyboardActivity = (e) => {
+      if (examStarted && !examFinished && e.ctrlKey && e.altKey) {
+        alert("Warning: Suspicious key combinations detected!");
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyboardActivity);
+    return () => {
+      window.removeEventListener('keydown', handleKeyboardActivity);
+    };
+  }, [examStarted, examFinished]);
+
   const startExam = () => {
     if (window.confirm(`Are you ready to start the exam? The exam will begin in full-screen mode and last for ${examDuration / 60} minutes. Note: Switching windows more than twice will terminate the exam.`)) {
       setExamStarted(true);
@@ -113,13 +126,16 @@ const ExamPlatform = () => {
   const calculateScore = () => {
     let totalScore = 0;
     let totalWeight = 0;
+  
     sampleQuestions.forEach(question => {
-      if (answers[question.id] === question.options[2]) { // Assuming the third option is always correct for this example
+      if (answers[question.id] === question.options[2]) { // Assuming the third option is always correct
         totalScore += question.weight;
       }
       totalWeight += question.weight;
     });
-    return (totalScore / totalWeight * 100).toFixed(2);
+  
+    const scorePercentage = (totalScore / totalWeight) * 100;
+    return scorePercentage.toFixed(2); 
   };
 
   const handleDurationChange = (e) => {
@@ -187,7 +203,7 @@ const ExamPlatform = () => {
           <h3>Your Answers:</h3>
           {sampleQuestions.map(question => (
             <div key={question.id} className="question-review">
-              <p>Question {question.id} (Weight: {question.weight}): {answers[question.id] || "Not answered"}</p>
+              <p>Question {question.id} (Weight: {question.weight}): {answers[question.id] || "Not answered"} - {answers[question.id] === question.options[2] ? "Correct" : "Incorrect"}</p>
             </div>
           ))}
         </div>

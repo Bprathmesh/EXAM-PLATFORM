@@ -1,29 +1,34 @@
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 
 const Timer = forwardRef(({ duration, onTimeUp }, ref) => {
-  const [timeLeft, setTimeLeft] = useState(duration);
+  const [timeRemaining, setTimeRemaining] = useState(duration);
 
   useEffect(() => {
-    if (timeLeft > 0) {
-      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timerId);
-    } else {
-      onTimeUp();
-    }
-  }, [timeLeft, onTimeUp]);
+    const timer = setInterval(() => {
+      setTimeRemaining(prevTime => {
+        if (prevTime <= 1) {
+          clearInterval(timer);
+          onTimeUp();
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [onTimeUp]);
 
   useImperativeHandle(ref, () => ({
-    resetTimer: () => setTimeLeft(duration)
+    resetTimer: () => setTimeRemaining(duration)
   }));
 
   const formatTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  return <div className="timer">Time Remaining: {formatTime(timeLeft)}</div>;
+  return <div className="timer">Time Remaining: {formatTime(timeRemaining)}</div>;
 });
 
 export default Timer;

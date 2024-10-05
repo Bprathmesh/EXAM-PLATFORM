@@ -1,113 +1,168 @@
+/* General Styling */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
     line-height: 1.6;
     color: #333;
     background-color: #f4f4f4;
-  }
-  
-  .exam-platform {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+/* Exam Platform Container */
+.exam-platform {
     max-width: 800px;
-    margin: 0 auto;
+    margin: 40px auto;
     padding: 20px;
     background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .exam-header {
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Header Styling */
+.exam-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .exam-content {
+    padding-bottom: 15px;
+    border-bottom: 2px solid #eee;
+}
+
+.timer {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+/* Question Content */
+.exam-content {
+    margin-bottom: 30px;
+}
+
+.question {
+    background-color: #fafafa;
+    padding: 20px;
     margin-bottom: 20px;
-  }
-  
-  .exam-footer {
-    text-align: center;
-    margin-top: 20px;
-  }
-  
-  .question {
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 5px;
-    border: 1px solid #e0e0e0;
-  }
-  
-  button {
-    padding: 10px 20px;
-    font-size: 16px;
-    color: white;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+/* Buttons Styling */
+button {
+    padding: 12px 24px;
+    font-size: 1em;
+    color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .start-button, .submit-button {
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin: 5px;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+/* Button Colors */
+.start-button,
+.submit-button {
     background-color: #4CAF50;
-  }
-  
-  .start-button:hover, .submit-button:hover {
+}
+
+.start-button:hover,
+.submit-button:hover {
     background-color: #45a049;
-  }
-  
-  .reset-button {
+}
+
+.reset-button {
     background-color: #f44336;
-  }
-  
-  .reset-button:hover {
+}
+
+.reset-button:hover {
     background-color: #d32f2f;
-  }
-  
-  .timer {
-    font-size: 18px;
-    font-weight: bold;
-    color: #4CAF50;
-  }
-  
-  input[type="radio"] {
+}
+
+/* Radio Inputs and Labels */
+input[type="radio"] {
     margin-right: 10px;
-  }
-  
-  label {
+}
+
+label {
+    font-size: 1em;
+    margin-bottom: 8px;
     display: inline-block;
-    margin-bottom: 10px;
-  }
-  
-  .exam-setup {
+}
+
+/* Exam Setup */
+.exam-setup {
     margin-bottom: 20px;
-  }
-  
-  .exam-setup label {
+}
+
+.exam-setup label {
     margin-right: 10px;
-  }
-  
-  .exam-setup input {
-    padding: 5px;
+}
+
+.exam-setup input {
+    padding: 8px;
     font-size: 16px;
-  }
-  
-  .exam-report {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: calc(100% - 20px);
+}
+
+/* Exam Footer */
+.exam-footer {
+    margin-top: 30px;
+}
+
+/* Exam Report Section */
+.exam-report {
     background-color: #e8f5e9;
-    padding: 15px;
-    border-radius: 5px;
+    padding: 20px;
+    border-radius: 8px;
     margin-bottom: 20px;
-  }
-  
-  .answer-review {
+    text-align: left;
+}
+
+.answer-review {
     margin-top: 20px;
-  }
-  
-  .question-review {
+    text-align: left;
+}
+
+.question-review {
     background-color: #f1f8e9;
-    padding: 10px;
-    border-radius: 5px;
+    padding: 15px;
+    border-radius: 8px;
     margin-bottom: 10px;
-  }
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .exam-platform {
+        padding: 15px;
+    }
+
+    .exam-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .timer {
+        font-size: 1.2em;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 1em;
+        margin: 10px 0;
+    }
+}
