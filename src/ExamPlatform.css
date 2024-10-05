@@ -1,0 +1,15 @@
+.exam-platform {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+  
+  .timer {
+    font-size: 24px;
+    margin: 20px 0;
+  }
