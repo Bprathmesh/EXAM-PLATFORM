@@ -1,12 +1,9 @@
-// File: components/ExamPlatform.js
-
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import Timer from "./Timer";
 import Question from "./Question";
 import QuestionNavigation from "./QuestionNavigation";
 import ProgressBar from "./ProgressBar";
-import ExamFinished from "./ExamFinished";
 import "./ExamPlatform.css";
 
 const sampleQuestions = [
@@ -50,12 +47,8 @@ const ExamPlatform = () => {
       try {
         if (document.exitFullscreen) {
           document.exitFullscreen();
-        } else if (document.mozCancelFullScreen) { // Firefox
-          document.mozCancelFullScreen();
         } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
           document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) { // IE/Edge
-          document.msExitFullscreen();
         }
       } catch (error) {
         console.warn("Failed to exit full-screen mode:", error);
@@ -152,7 +145,6 @@ const ExamPlatform = () => {
 
     sampleQuestions.forEach((question) => {
       if (answers[question.id] === question.options[2]) {
-        // Assuming the third option is always correct
         totalScore += question.weight;
       }
       totalWeight += question.weight;
@@ -172,20 +164,27 @@ const ExamPlatform = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if (examStarted && !examFinished) {
-        if (e.key === 'ArrowLeft') {
+  const handleKeyPress = useCallback((e) => {
+    if (!examStarted && e.key === 'Enter') {
+      startExam();
+    } else if (examStarted && !examFinished) {
+      switch(e.key) {
+        case 'ArrowLeft':
           navigateQuestion(currentQuestionIndex - 1);
-        } else if (e.key === 'ArrowRight') {
+          break;
+        case 'ArrowRight':
           navigateQuestion(currentQuestionIndex + 1);
-        }
+          break;
+        default:
+          break;
       }
-    };
+    }
+  }, [examStarted, examFinished, currentQuestionIndex, navigateQuestion, startExam]);
 
+  useEffect(() => {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [examStarted, examFinished, currentQuestionIndex, navigateQuestion]);
+  }, [handleKeyPress]);
 
   const renderExamContent = useCallback(() => (
     <div className="exam-platform">
@@ -237,21 +236,40 @@ const ExamPlatform = () => {
         <button onClick={startExam} className="start-button">
           Start Exam
         </button>
+        <p>Press Enter to start the exam</p>
       </div>
     );
   }
 
   if (examFinished) {
     return (
-      <ExamFinished
-        examStatus={examStatus}
-        score={calculateScore()}
-        violationCount={violationCount}
-        windowSwitchCount={windowSwitchCount}
-        questions={sampleQuestions}
-        answers={answers}
-        onRestart={resetExam}
-      />
+      <div className="exam-platform">
+        <h1>Exam Finished</h1>
+        <div className="exam-report">
+          <h2>Exam Report</h2>
+          <p>Status: {examStatus}</p>
+          <p>Score: {calculateScore()}%</p>
+          <p>Full-screen violations: {violationCount}</p>
+          <p>Window switches: {windowSwitchCount}</p>
+        </div>
+        <div className="answer-review">
+          <h3>Your Answers:</h3>
+          {sampleQuestions.map((question) => (
+            <div key={question.id} className="question-review">
+              <p>
+                Question {question.id} (Weight: {question.weight}):{" "}
+                {answers[question.id] || "Not answered"} -{" "}
+                {answers[question.id] === question.options[2]
+                  ? "Correct"
+                  : "Incorrect"}
+              </p>
+            </div>
+          ))}
+        </div>
+        <button onClick={resetExam} className="reset-button">
+          Restart Exam
+        </button>
+      </div>
     );
   }
 
