@@ -1,7 +1,11 @@
+// File: ExamPlatform.js
+
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import Timer from "./Timer";
 import Question from "./Question";
+import QuestionNavigation from "./QuestionNavigation";
+import ProgressBar from "./ProgressBar";
 import "./ExamPlatform.css";
 
 const sampleQuestions = [
@@ -33,17 +37,28 @@ const ExamPlatform = () => {
   const [examStatus, setExamStatus] = useState("");
   const [answers, setAnswers] = useState({});
   const [examDuration, setExamDuration] = useState(3600); // Default 1 hour
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const timerRef = useRef(null);
   const fullScreenHandle = useFullScreenHandle();
 
-  const terminateExam = useCallback(
-    (reason) => {
-      setExamFinished(true);
-      setExamStatus(reason);
-      fullScreenHandle.exit();
-    },
-    [fullScreenHandle]
-  );
+  const terminateExam = useCallback((reason) => {
+    setExamFinished(true);
+    setExamStatus(reason);
+    
+    // Only attempt to exit full-screen if we're currently in full-screen mode
+    if (document.fullscreenElement) {
+      try {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } 
+         else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+          document.webkitExitFullscreen();
+        }
+      } catch (error) {
+        console.warn("Failed to exit full-screen mode:", error);
+      }
+    }
+  }, []);
 
   const handleViolation = useCallback(() => {
     setViolationCount((prevCount) => {
@@ -91,20 +106,7 @@ const ExamPlatform = () => {
     };
   }, [examStarted, examFinished, handleWindowSwitch]);
 
-  useEffect(() => {
-    const handleKeyboardActivity = (e) => {
-      if (examStarted && !examFinished && e.ctrlKey && e.altKey) {
-        alert("Warning: Suspicious key combinations detected!");
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyboardActivity);
-    return () => {
-      window.removeEventListener("keydown", handleKeyboardActivity);
-    };
-  }, [examStarted, examFinished]);
-
-  const startExam = () => {
+  const startExam = useCallback(() => {
     if (
       window.confirm(
         `Are you ready to start the exam? The exam will begin in full-screen mode and last for ${
@@ -115,38 +117,38 @@ const ExamPlatform = () => {
       setExamStarted(true);
       fullScreenHandle.enter();
     }
-  };
+  }, [examDuration, fullScreenHandle]);
 
-  const submitExam = () => {
+  const submitExam = useCallback(() => {
     terminateExam("Exam completed successfully.");
-  };
+  }, [terminateExam]);
 
-  const resetExam = () => {
+  const resetExam = useCallback(() => {
     setExamStarted(false);
     setExamFinished(false);
     setViolationCount(0);
     setWindowSwitchCount(0);
     setExamStatus("");
     setAnswers({});
+    setCurrentQuestionIndex(0);
     if (timerRef.current) {
       timerRef.current.resetTimer();
     }
-  };
+  }, []);
 
-  const handleAnswer = (questionId, answer) => {
+  const handleAnswer = useCallback((questionId, answer) => {
     setAnswers((prevAnswers) => ({
       ...prevAnswers,
       [questionId]: answer,
     }));
-  };
+  }, []);
 
-  const calculateScore = () => {
+  const calculateScore = useCallback(() => {
     let totalScore = 0;
     let totalWeight = 0;
 
     sampleQuestions.forEach((question) => {
       if (answers[question.id] === question.options[2]) {
-        // Assuming the third option is always correct
         totalScore += question.weight;
       }
       totalWeight += question.weight;
@@ -154,13 +156,34 @@ const ExamPlatform = () => {
 
     const scorePercentage = (totalScore / totalWeight) * 100;
     return scorePercentage.toFixed(2);
-  };
+  }, [answers]);
 
-  const handleDurationChange = (e) => {
+  const handleDurationChange = useCallback((e) => {
     setExamDuration(Number(e.target.value) * 60);
-  };
+  }, []);
 
-  const renderExamContent = () => (
+  const navigateQuestion = useCallback((index) => {
+    if (index >= 0 && index < sampleQuestions.length) {
+      setCurrentQuestionIndex(index);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (examStarted && !examFinished) {
+        if (e.key === 'ArrowLeft') {
+          navigateQuestion(currentQuestionIndex - 1);
+        } else if (e.key === 'ArrowRight') {
+          navigateQuestion(currentQuestionIndex + 1);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [examStarted, examFinished, currentQuestionIndex, navigateQuestion]);
+
+  const renderExamContent = useCallback(() => (
     <div className="exam-platform">
       <div className="exam-header">
         <h1>Exam in Progress</h1>
@@ -170,14 +193,18 @@ const ExamPlatform = () => {
           ref={timerRef}
         />
       </div>
+      <ProgressBar current={currentQuestionIndex + 1} total={sampleQuestions.length} />
+      <QuestionNavigation 
+        questions={sampleQuestions}
+        currentIndex={currentQuestionIndex}
+        answers={answers}
+        onNavigate={navigateQuestion}
+      />
       <div className="exam-content">
-        {sampleQuestions.map((question) => (
-          <Question
-            key={question.id}
-            question={question}
-            onAnswer={handleAnswer}
-          />
-        ))}
+        <Question
+          question={sampleQuestions[currentQuestionIndex]}
+          onAnswer={handleAnswer}
+        />
       </div>
       <div className="exam-footer">
         <button onClick={submitExam} className="submit-button">
@@ -185,7 +212,7 @@ const ExamPlatform = () => {
         </button>
       </div>
     </div>
-  );
+  ), [currentQuestionIndex, examDuration, answers, handleAnswer, navigateQuestion, submitExam, terminateExam]);
 
   if (!examStarted) {
     return (
