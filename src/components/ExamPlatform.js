@@ -1,4 +1,4 @@
-// File: ExamPlatform.js
+// File: components/ExamPlatform.js
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
@@ -6,6 +6,7 @@ import Timer from "./Timer";
 import Question from "./Question";
 import QuestionNavigation from "./QuestionNavigation";
 import ProgressBar from "./ProgressBar";
+import ExamFinished from "./ExamFinished";
 import "./ExamPlatform.css";
 
 const sampleQuestions = [
@@ -45,14 +46,16 @@ const ExamPlatform = () => {
     setExamFinished(true);
     setExamStatus(reason);
     
-    // Only attempt to exit full-screen if we're currently in full-screen mode
     if (document.fullscreenElement) {
       try {
         if (document.exitFullscreen) {
           document.exitFullscreen();
-        } 
-         else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+        } else if (document.mozCancelFullScreen) { // Firefox
+          document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
           document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { // IE/Edge
+          document.msExitFullscreen();
         }
       } catch (error) {
         console.warn("Failed to exit full-screen mode:", error);
@@ -149,6 +152,7 @@ const ExamPlatform = () => {
 
     sampleQuestions.forEach((question) => {
       if (answers[question.id] === question.options[2]) {
+        // Assuming the third option is always correct
         totalScore += question.weight;
       }
       totalWeight += question.weight;
@@ -239,33 +243,15 @@ const ExamPlatform = () => {
 
   if (examFinished) {
     return (
-      <div className="exam-platform">
-        <h1>Exam Finished</h1>
-        <div className="exam-report">
-          <h2>Exam Report</h2>
-          <p>Status: {examStatus}</p>
-          <p>Score: {calculateScore()}%</p>
-          <p>Full-screen violations: {violationCount}</p>
-          <p>Window switches: {windowSwitchCount}</p>
-        </div>
-        <div className="answer-review">
-          <h3>Your Answers:</h3>
-          {sampleQuestions.map((question) => (
-            <div key={question.id} className="question-review">
-              <p>
-                Question {question.id} (Weight: {question.weight}):{" "}
-                {answers[question.id] || "Not answered"} -{" "}
-                {answers[question.id] === question.options[2]
-                  ? "Correct"
-                  : "Incorrect"}
-              </p>
-            </div>
-          ))}
-        </div>
-        <button onClick={resetExam} className="reset-button">
-          Restart Exam
-        </button>
-      </div>
+      <ExamFinished
+        examStatus={examStatus}
+        score={calculateScore()}
+        violationCount={violationCount}
+        windowSwitchCount={windowSwitchCount}
+        questions={sampleQuestions}
+        answers={answers}
+        onRestart={resetExam}
+      />
     );
   }
 
